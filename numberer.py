@@ -1,21 +1,16 @@
 class Numberer:
-	def __init__(self):
+	def __init__(self, model):
 		self.v2n = dict()
 		self.n2v = list()
-		self.start_idx = 1
+		self.model = model
 
 	def number(self, value, add_if_absent=True):
-		n = self.v2n.get(value)
+		n = self.model.wv[value]
 
 		if n is None:
-			if add_if_absent:
-				n = len(self.n2v) + self.start_idx
-				self.v2n[value] = n
-				self.n2v.append(value)
-			else:
-				return 0
+			n = numpy.zeros(DefaultConfig.embedding_sz)
 
-		return n
+		return tf.pack(n)
 
 	def value(self, number):
 		self.n2v[number]

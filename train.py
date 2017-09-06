@@ -17,18 +17,18 @@ def read_lexicon(filename):
 		for line in f:
 			fields = line.split(":")
 			
-			lex[fields[1].strip()] = fields[3].strip()
+			lex[fields[1].strip()] = {fields[3].strip():1}
 
 		return lex
 
 
-def recode_lexicon(lexicon, chars, labels, train=False):
+def recode_lexicon(lexicon, words, labels, train=False):
 	int_lex = []
 
-	for (word, tags) in lexicon.items():
-		int_word = []
-		for char in word:
-			int_word.append(chars.number(char, train))
+	for (sentence, tags) in lexicon.items():
+		int_sent = []
+		for word in sentence.split():
+			int_word.append(words.number(word, train))
 
 		int_tags = {}
 		for (tag, p) in tags.items():
@@ -140,7 +140,7 @@ def train_model(config, train_batches, validation_batches):
 
 
 if __name__ == "__main__":
-	if len(sys.argv) != 3:
+	if len(sys.argv) != 4:
 		sys.stderr.write("Usage: %s TRAIN_SET DEV_SET\n" % sys.argv[0])
 		sys.exit(1)
 
@@ -152,8 +152,8 @@ if __name__ == "__main__":
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
-	chars = Numberer()
-	labels = Numberer()
+	chars = Numberer(Word2Vec.load(argv[3]))
+	labels = Numberer(Word2Vec.load(argv[3]))
 	train_lexicon = recode_lexicon(train_lexicon, chars, labels, train=True)
 	validation_lexicon = recode_lexicon(validation_lexicon, chars, labels)
 
