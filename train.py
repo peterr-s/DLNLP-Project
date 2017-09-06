@@ -17,7 +17,7 @@ def read_lexicon(filename):
 		for line in f:
 			fields = line.split(":")
 			
-			lex[fields[0].strip()] = fields[3].strip()
+			lex[fields[1].strip()] = fields[3].strip()
 
 		return lex
 
