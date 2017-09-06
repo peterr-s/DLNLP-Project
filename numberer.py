@@ -13,7 +13,7 @@ class Numberer:
 		return tf.pack(n)
 
 	def value(self, number):
-		self.n2v[number]
+		return model.wv.similar_by_vector(number, topn = 1)[0][0]
 
 	def max_number(self):
-		return len(self.n2v) + 1
+		return len(model.wv.vocab) + 1

@@ -28,7 +28,7 @@ def recode_lexicon(lexicon, words, labels, train=False):
 	for (sentence, tags) in lexicon.items():
 		int_sent = []
 		for word in sentence.split():
-			int_word.append(words.number(word, train))
+			int_sent.append(words.number(word, train))
 
 		int_tags = {}
 		for (tag, p) in tags.items():
@@ -141,7 +141,7 @@ def train_model(config, train_batches, validation_batches):
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
-		sys.stderr.write("Usage: %s TRAIN_SET DEV_SET\n" % sys.argv[0])
+		sys.stderr.write("Usage: %s TRAIN_SET DEV_SET EMBEDDINGS\n" % sys.argv[0])
 		sys.exit(1)
 
 	config = DefaultConfig()
@@ -152,8 +152,9 @@ if __name__ == "__main__":
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
-	chars = Numberer(Word2Vec.load(argv[3]))
-	labels = Numberer(Word2Vec.load(argv[3]))
+	embedding_model = Word2Vec.load(sys.argv[3])
+	chars = Numberer(embedding_model)
+	labels = Numberer(embedding_model)
 	train_lexicon = recode_lexicon(train_lexicon, chars, labels, train=True)
 	validation_lexicon = recode_lexicon(validation_lexicon, chars, labels)
 
