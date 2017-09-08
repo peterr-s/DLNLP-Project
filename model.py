@@ -6,16 +6,20 @@ from enum import Enum
 import tensorflow as tf
 from tensorflow.contrib import rnn
 
+from numberer import Numberer
+
 class Phase(Enum):
 	Train = 0
 	Validation = 1
 	Predict = 2
 
 class Model:
-	def __init__(self, config, batch, lens_batch, label_batch, n_chars, phase = Phase.Predict):
+	def __init__(self, config, batch, lens_batch, label_batch, n_chars, embeddings, phase = Phase.Predict):
 		batch_size = batch.shape[1]
 		input_size = batch.shape[2]
 		label_size = label_batch.shape[2]
+		
+		nr = Numberer(embeddings, config)
 
 		# The integer-encoded words. input_size is the (maximum) number of
 		# time steps.
@@ -37,8 +41,10 @@ class Model:
 				tf.float32, shape=[batch_size, label_size])
 
 		# convert to embeddings
-		embeddings = tf.get_variable("embeddings", shape = [n_chars, config.embedding_sz])
-		input_layer = tf.nn.embedding_lookup(embeddings, self._x)
+		# embeddings = tf.get_variable("embeddings", shape = [n_chars, config.embedding_sz])
+		# input_layer = tf.nn.embedding_lookup(embeddings, self._x)
+		#input_layer = [embeddings.wv[w] for w in self._x]
+		input_layer = self._x
 
 		# make a bunch of LSTM cells and link them
 		# use rnn.DropoutWrapper instead of tf.nn.dropout because the layers are anonymous

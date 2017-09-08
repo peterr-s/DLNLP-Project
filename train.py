@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from enum import Enum
 import os
 import sys
@@ -9,6 +11,7 @@ from config import DefaultConfig
 from model import Model, Phase
 from numberer import Numberer
 
+import gensim
 
 def read_lexicon(filename):
 	with open(filename, "r") as f:
@@ -34,7 +37,7 @@ def recode_lexicon(lexicon, words, labels, train=False):
 		for (tag, p) in tags.items():
 			int_tags[labels.number(tag, train)] = p
 
-		int_lex.append((int_word, int_tags))
+		int_lex.append((int_sent, int_tags))
 
 	return int_lex
 
@@ -85,7 +88,7 @@ def generate_instances(
 	return (words, lengths, labels)
 
 
-def train_model(config, train_batches, validation_batches):
+def train_model(config, train_batches, validation_batches, embeddings):
 	train_batches, train_lens, train_labels = train_batches
 	validation_batches, validation_lens, validation_labels = validation_batches
 
@@ -99,6 +102,7 @@ def train_model(config, train_batches, validation_batches):
 				train_lens,
 				train_labels,
 				n_chars,
+				embeddings,
 				phase=Phase.Train)
 
 		with tf.variable_scope("model", reuse=True):
@@ -108,6 +112,7 @@ def train_model(config, train_batches, validation_batches):
 				validation_lens,
 				validation_labels,
 				n_chars,
+				embeddings,
 				phase=Phase.Validation)
 
 		sess.run(tf.global_variables_initializer())
@@ -152,9 +157,9 @@ if __name__ == "__main__":
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
-	embedding_model = Word2Vec.load(sys.argv[3])
-	chars = Numberer(embedding_model)
-	labels = Numberer(embedding_model)
+	embedding_model = gensim.models.Word2Vec.load(sys.argv[3])
+	chars = Numberer(embedding_model, config)
+	labels = Numberer(embedding_model, config)
 	train_lexicon = recode_lexicon(train_lexicon, chars, labels, train=True)
 	validation_lexicon = recode_lexicon(validation_lexicon, chars, labels)
 
@@ -171,4 +176,4 @@ if __name__ == "__main__":
 		batch_size=config.batch_size)
 
 	# Train the model
-	train_model(config, train_batches, validation_batches)
+	train_model(config, train_batches, validation_batches, embedding_model)
