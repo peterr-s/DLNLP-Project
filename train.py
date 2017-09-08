@@ -58,7 +58,7 @@ def generate_instances(
 			n_batches,
 			batch_size),
 		dtype=np.int32)
-	words = np.zeros(
+	sents = np.zeros(
 		shape=(
 			n_batches,
 			batch_size,
@@ -67,22 +67,22 @@ def generate_instances(
 
 	for batch in range(n_batches):
 		for idx in range(batch_size):
-			(word, l) = data[(batch * batch_size) + idx]
+			(sent, l) = data[(batch * batch_size) + idx]
 
 			# Add label distribution
 			for label, prob in l.items():
-				labels[batch, idx, label] = prob
+				labels[batch, idx, label] = 1.0
 
 			# Sequence
-			timesteps = min(max_timesteps, len(word))
+			timesteps = min(max_timesteps, len(sent))
 
 			# Sequence length (time steps)
 			lengths[batch, idx] = timesteps
 
 			# Word characters
-			words[batch, idx, :timesteps] = word[:timesteps]
+			sents[batch, idx, :timesteps] = sent[:timesteps]
 
-	return (words, lengths, labels)
+	return (sents, lengths, labels)
 
 
 def train_model(config, train_batches, validation_batches):
