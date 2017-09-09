@@ -1,23 +1,24 @@
-import numpy as np
-import tensorflow as tf
-
 class Numberer:
-	def __init__(self, model, config):
+	def __init__(self):
 		self.v2n = dict()
 		self.n2v = list()
-		self.model = model
-		self.config = config
+		self.start_idx = 1
 
 	def number(self, value, add_if_absent=True):
-		n = np.zeros(self.config.embedding_sz)
+		n = self.v2n.get(value)
 
-		if value in self.model.wv.vocab.items() :
-			n = self.model.wv[value]
-		
-		return tf.stack(n)
+		if n is None:
+			if add_if_absent:
+				n = len(self.n2v) + self.start_idx
+				self.v2n[value] = n
+				self.n2v.append(value)
+			else:
+				return 0
+
+		return n
 
 	def value(self, number):
-		return model.wv.similar_by_vector(number, topn = 1)[0][0]
+		self.n2v[number]
 
 	def max_number(self):
-		return len(self.model.wv.vocab) + 1
+		return len(self.n2v) + 1
