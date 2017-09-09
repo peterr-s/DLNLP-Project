@@ -1,9 +1,13 @@
+# Author: Peter Schoener, 4013996
+# Honor Code: I pledge that this program represents my own work.
+
 from enum import Enum
 import os
 import sys
 
 import numpy as np
 import tensorflow as tf
+import gensim
 
 from config import DefaultConfig
 from model import Model, Phase
@@ -26,15 +30,15 @@ def recode_lexicon(lexicon, words, labels, train=False):
 	int_lex = []
 
 	for (sentence, tags) in lexicon.items():
-		int_sent = []
+		int_sentence = []
 		for word in sentence.split():
-			int_sent.append(words.number(word, train))
+			int_sentence.append(sentence.number(word, train))
 
 		int_tags = {}
 		for (tag, p) in tags.items():
 			int_tags[labels.number(tag, train)] = p
 
-		int_lex.append((int_word, int_tags))
+		int_lex.append((int_sentence, int_tags))
 
 	return int_lex
 
@@ -58,7 +62,7 @@ def generate_instances(
 			n_batches,
 			batch_size),
 		dtype=np.int32)
-	sents = np.zeros(
+	sentences = np.zeros(
 		shape=(
 			n_batches,
 			batch_size,
@@ -67,25 +71,25 @@ def generate_instances(
 
 	for batch in range(n_batches):
 		for idx in range(batch_size):
-			(sent, l) = data[(batch * batch_size) + idx]
+			(sentence, l) = data[(batch * batch_size) + idx]
 
 			# Add label distribution
 			for label, prob in l.items():
-				labels[batch, idx, label] = 1.0
+				labels[batch, idx, label] = prob
 
 			# Sequence
-			timesteps = min(max_timesteps, len(sent))
+			timesteps = min(max_timesteps, len(sentence))
 
 			# Sequence length (time steps)
 			lengths[batch, idx] = timesteps
 
 			# Word characters
-			sents[batch, idx, :timesteps] = sent[:timesteps]
+			sentences[batch, idx, :timesteps] = sentence[:timesteps]
 
-	return (sents, lengths, labels)
+	return (sentences, lengths, labels)
 
 
-def train_model(config, train_batches, validation_batches):
+def train_model(config, train_batches, validation_batches, embedding_model):
 	train_batches, train_lens, train_labels = train_batches
 	validation_batches, validation_lens, validation_labels = validation_batches
 
@@ -98,6 +102,7 @@ def train_model(config, train_batches, validation_batches):
 				train_batches,
 				train_lens,
 				train_labels,
+				embedding_model,
 				n_chars,
 				phase=Phase.Train)
 
@@ -107,6 +112,7 @@ def train_model(config, train_batches, validation_batches):
 				validation_batches,
 				validation_lens,
 				validation_labels,
+				embedding_model,
 				n_chars,
 				phase=Phase.Validation)
 
@@ -146,29 +152,29 @@ if __name__ == "__main__":
 
 	config = DefaultConfig()
 
-	# Read training and validation data.
+	# Read training, validation, and embedding data.
 	train_lexicon = read_lexicon(sys.argv[1])
 	validation_lexicon = read_lexicon(sys.argv[2])
+	embedding_model = gensim.models.Word2Vec.load(sys.argv[3])
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
-	embedding_model = Word2Vec.load(sys.argv[3])
-	chars = Numberer(embedding_model)
-	labels = Numberer(embedding_model)
+	chars = Numberer()
+	labels = Numberer()
 	train_lexicon = recode_lexicon(train_lexicon, chars, labels, train=True)
 	validation_lexicon = recode_lexicon(validation_lexicon, chars, labels)
 
 	# Generate batches
 	train_batches = generate_instances(
 		train_lexicon,
-		labels.max_number(),
+		labels,#.max_number(),
 		config.max_timesteps,
 		batch_size=config.batch_size)
 	validation_batches = generate_instances(
 		validation_lexicon,
-		labels.max_number(),
+		labels,#.max_number(),
 		config.max_timesteps,
 		batch_size=config.batch_size)
 
 	# Train the model
-	train_model(config, train_batches, validation_batches)
+	train_model(config, train_batches, validation_batches, embedding_model)
