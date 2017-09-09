@@ -1,6 +1,7 @@
 from enum import Enum
 
 import tensorflow as tf
+import numpy
 from tensorflow.contrib import rnn
 
 class Phase(Enum):
@@ -8,18 +9,12 @@ class Phase(Enum):
 	Validation = 1
 	Predict = 2
 
-def get_embedding(embeddings, word) :
-	if word in embeddings.wv :
-		return embeddings.wv[word]
-	else :
-		return numpy.zeros(embeddings.vector_size)
-
 class Model:
-	def __init__(self, config, batch, lens_batch, label_batch, embedding_model, numberer, phase = Phase.Predict):
+	def __init__(self, config, batch, lens_batch, label_batch, embedding_model, n_chars, numberer, phase = Phase.Predict):
 		batch_size = batch.shape[1]
 		input_size = batch.shape[2]
 		label_size = label_batch.shape[2]
-
+		
 		# The integer-encoded words. input_size is the (maximum) number of
 		# time steps.
 		self._x = tf.placeholder(tf.int32, shape=[batch_size, input_size])
@@ -42,9 +37,11 @@ class Model:
 		# convert to embeddings
 		# embeddings = tf.get_variable("embeddings", shape = [n_chars, config.embedding_sz])
 		# input_layer = tf.nn.embedding_lookup(embeddings, self._x)
+		self._embedding_model = embedding_model
+		self._numberer = numberer
 		w_int = tf.placeholder(tf.int32)
-		embedding = get_embedding(numberer.value(w_int))
-		input_layer = [embedding(w) for w in self._x]
+		#embedding = self.get_embedding(numberer.value(w_int))
+		input_layer = tf.map_fn(self.sent_embed, self._x)
 
 		# make a bunch of LSTM cells and link them
 		# use rnn.DropoutWrapper instead of tf.nn.dropout because the layers are anonymous
@@ -78,6 +75,16 @@ class Model:
 			correct = tf.cast(correct, tf.float32)
 			self._accuracy = tf.reduce_mean(correct)
 
+	def sent_embed(self, sent_arr) :
+		return tf.map_fn(self.get_embedding, sent_arr)
+	
+	def get_embedding(self, word_int) :
+		word = self._numberer.value(word_int)
+		if word in self._embedding_model.wv :
+			return self._embedding_model.wv[word]
+		else :
+			return numpy.zeros(self._embedding_model.vector_size)
+	
 	@property
 	def accuracy(self):
 		return self._accuracy

@@ -1,5 +1,8 @@
-# Author: Peter Schoener, 4013996
-# Honor Code: I pledge that this program represents my own work.
+#!/usr/bin/python3
+
+# Authors:	Peter Schoener, 4013996
+#			Luana Vaduva,
+# Honor Code: We pledge that this program represents our own work.
 
 from enum import Enum
 import os
@@ -32,7 +35,7 @@ def recode_lexicon(lexicon, words, labels, train=False):
 	for (sentence, tags) in lexicon.items():
 		int_sentence = []
 		for word in sentence.split():
-			int_sentence.append(sentence.number(word, train))
+			int_sentence.append(words.number(word, train))
 
 		int_tags = {}
 		for (tag, p) in tags.items():
@@ -55,7 +58,7 @@ def generate_instances(
 		shape=(
 			n_batches,
 			batch_size,
-			max_label),
+			max_label.max_number()),
 		dtype=np.float32)
 	lengths = np.zeros(
 		shape=(
@@ -89,7 +92,7 @@ def generate_instances(
 	return (sentences, lengths, labels)
 
 
-def train_model(config, train_batches, validation_batches, embedding_model):
+def train_model(config, train_batches, validation_batches, embedding_model, numberer):
 	train_batches, train_lens, train_labels = train_batches
 	validation_batches, validation_lens, validation_labels = validation_batches
 
@@ -104,6 +107,7 @@ def train_model(config, train_batches, validation_batches, embedding_model):
 				train_labels,
 				embedding_model,
 				n_chars,
+				numberer,
 				phase=Phase.Train)
 
 		with tf.variable_scope("model", reuse=True):
@@ -114,6 +118,7 @@ def train_model(config, train_batches, validation_batches, embedding_model):
 				validation_labels,
 				embedding_model,
 				n_chars,
+				numberer,
 				phase=Phase.Validation)
 
 		sess.run(tf.global_variables_initializer())
@@ -159,10 +164,10 @@ if __name__ == "__main__":
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
-	chars = Numberer()
+	words = Numberer()
 	labels = Numberer()
-	train_lexicon = recode_lexicon(train_lexicon, chars, labels, train=True)
-	validation_lexicon = recode_lexicon(validation_lexicon, chars, labels)
+	train_lexicon = recode_lexicon(train_lexicon, words, labels, train=True)
+	validation_lexicon = recode_lexicon(validation_lexicon, words, labels)
 
 	# Generate batches
 	train_batches = generate_instances(
@@ -177,4 +182,4 @@ if __name__ == "__main__":
 		batch_size=config.batch_size)
 
 	# Train the model
-	train_model(config, train_batches, validation_batches, embedding_model)
+	train_model(config, train_batches, validation_batches, embedding_model, words)

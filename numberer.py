@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 class Numberer:
 	def __init__(self):
 		self.v2n = dict()
@@ -18,7 +20,8 @@ class Numberer:
 		return n
 
 	def value(self, number):
-		self.n2v[number]
+		# self.n2v[number]
+		return tf.gather(self.n2v, number)
 
 	def max_number(self):
 		return len(self.n2v) + 1
