@@ -28,20 +28,11 @@ class Model:
 			self._y = tf.placeholder(
 				tf.float32, shape=[batch_size, label_size])
 
-		self._x = tf.placeholder(tf.int32, shape=[batch_size, input_size]) # these lines are duplicates of above; are they really necessary?
-		self._lens = tf.placeholder(tf.int32, shape=[batch_size])
-		if phase != Phase.Predict:
-			self._y = tf.placeholder(
-				tf.float32, shape=[batch_size, label_size])
-
 		# convert to embeddings
-		# embeddings = tf.get_variable("embeddings", shape = [n_chars, config.embedding_sz])
-		# input_layer = tf.nn.embedding_lookup(embeddings, self._x)
 		self._embedding_model = embedding_model
 		self._numberer = numberer
-		w_int = tf.placeholder(tf.int32)
-		#embedding = self.get_embedding(numberer.value(w_int))
 		input_layer = tf.map_fn(self.sent_embed, self._x)
+		# input_layer = self._x
 
 		# make a bunch of LSTM cells and link them
 		# use rnn.DropoutWrapper instead of tf.nn.dropout because the layers are anonymous
