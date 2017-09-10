@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from enum import Enum
 import os
 import sys
@@ -15,17 +17,9 @@ def read_lexicon(filename):
 		lex = {}
 
 		for line in f:
-			parts = line.split()
-			tag_parts = parts[1:]
-
-			tags = {}
-
-			for i in range(0, len(tag_parts), 2):
-				tag = tag_parts[i]
-				prob = float(tag_parts[i + 1])
-				tags[tag] = prob
-
-			lex[parts[0]] = tags
+			fields = line.split(":")
+			
+			lex[fields[1].strip()] = {fields[3].strip():1.0}
 
 		return lex
 
@@ -35,7 +29,7 @@ def recode_lexicon(lexicon, chars, labels, train=False):
 
 	for (word, tags) in lexicon.items():
 		int_word = []
-		for char in word:
+		for char in word.split():
 			int_word.append(chars.number(char, train))
 
 		int_tags = {}
