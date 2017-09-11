@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Authors:	Peter Schoener, 4013996
-#			Luana Vaduva,
+#			Luana Vaduva, 3974913
 # Honor Code: We pledge that this program represents our own work.
 
 from enum import Enum
@@ -52,7 +52,7 @@ def read_lexicon(filename):
 
 		for line in f:
 			fields = line.split(":")
-			lex[fields[1]] = {fields[3].strip():1.0}
+			lex[fields[1])] = {fields[3].strip():1.0}
 		return lex
 
 
