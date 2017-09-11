@@ -7,14 +7,43 @@
 from enum import Enum
 import os
 import sys
+import re
 
 import numpy as np
 import tensorflow as tf
 import gensim
 
+from guess_language import guess_language
+from bs4 import BeautifulSoup
+
 from config import DefaultConfig
 from model import Model, Phase
 from numberer import Numberer
+
+def is_english(text):
+	#remove non-ASCII characters
+	text = filter(lambda x: x in set(string.printable), text)
+	#only keep tweets that are in english
+	if guess_language(text) == 'en':
+		return True
+
+def preprocess(text):
+    #convert to lower case
+    text = text.lower()
+    #convert www.* or https?://* to URL
+    text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',text)
+    #convert @username to AT_USER
+    text = re.sub('@[^\s]+','AT_USER',text)
+    #remove additional white spaces
+    text = re.sub('[\s]+', ' ', text)
+    #replace #word with word
+    text = re.sub(r'#([^\s]+)', r'\1', text)
+    #trim
+    text = text.strip('\'"')
+    #get rid of HTML markup
+    soup = BeautifulSoup(text, "html5lib")
+    final = re.sub("[^a-zA-Z]", " ", soup.get_text())
+    return soup.get_text()
 
 
 def read_lexicon(filename):
@@ -23,9 +52,7 @@ def read_lexicon(filename):
 
 		for line in f:
 			fields = line.split(":")
-			
-			lex[fields[1].strip()] = {fields[3].strip():1.0}
-
+			lex[fields[1]] = {fields[3].strip():1.0}
 		return lex
 
 
