@@ -28,21 +28,21 @@ def is_english(text):
 
 	
 def preprocess(text):
-    #convert to lower case
-    text = text.lower()
-    #convert www.* or https?://* to URL
-    text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',text)
-    #convert @username to AT_USER
-    text = re.sub('@[^\s]+','AT_USER',text)
-    #remove additional white spaces
-    text = re.sub('[\s]+', ' ', text)
-    #replace #word with word
-    text = re.sub(r'#([^\s]+)', r'\1', text)
-    #trim
-    text = text.strip('\'"')
-    #get rid of HTML markup
-    soup = BeautifulSoup(text, "html5lib")
-        
+	#convert to lower case
+	text = text.lower()
+	#convert www.* or https?://* to URL
+	text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',text)
+	#convert @username to AT_USER
+	text = re.sub('@[^\s]+','AT_USER',text)
+	#remove additional white spaces
+	text = re.sub('[\s]+', ' ', text)
+	#replace #word with word
+	text = re.sub(r'#([^\s]+)', r'\1', text)
+	#trim
+	text = text.strip('\'"')
+	#get rid of HTML markup
+	soup = BeautifulSoup(text, "html5lib")
+
 	return soup.get_text()
 
 
