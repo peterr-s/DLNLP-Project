@@ -48,10 +48,11 @@ class Model:
 		backward_LSTM = rnn.MultiRNNCell([rnn.DropoutWrapper(rnn.BasicLSTMCell(config.LSTM_sz), output_keep_prob = config.dropout_ratio) for _ in range(config.LSTM_ct)])
 				
 		# run the whole thing
-		hidden, _, _ = tf.nn.bidirectional_dynamic_rnn(stacked_LSTM, backward_LSTM, input_layer, sequence_length = self._lens, dtype = tf.float32)
-		w = tf.get_variable("W", shape=[hidden[-1].h.shape[1], label_size]) # if I understood the structure of MultiRNNCell correctly, hidden[-1] should be the final state
+		_, hidden = tf.nn.bidirectional_dynamic_rnn(stacked_LSTM, backward_LSTM, input_layer, sequence_length = self._lens, dtype = tf.float32)
+		hidden_combined = tf.concat([hidden[0], hidden[1]], axis = 2)
+		w = tf.get_variable("W", shape=[hidden_combined[-1].h.shape[1], label_size]) # if I understood the structure of MultiRNNCell correctly, hidden[-1] should be the final state
 		b = tf.get_variable("b", shape=[1])
-		logits = tf.matmul(hidden[-1].h, w) + b
+		logits = tf.matmul(hidden_combined[-1].h, w) + b
 
 		if phase == Phase.Train or Phase.Validation:
 			losses = tf.nn.softmax_cross_entropy_with_logits(
