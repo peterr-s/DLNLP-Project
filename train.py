@@ -14,35 +14,38 @@ import tensorflow as tf
 import gensim
 
 from bs4 import BeautifulSoup
-
+from guess_language import guess_language
 
 from config import DefaultConfig
 from model import Model, Phase
 from numberer import Numberer
 
 def is_english(text):
+"""
 	eng_stopwords = [u'all', u'just', u'being', u'over', u'both', u'through', u'yourselves', u'its', u'before', u'hadn', u'herself', u'll', u'had', u'should', u'to', u'only', u'won', u'under', u'ours', u'has', u'do', u'them', u'his', u'very', u'they', u'not', u'during', u'now', u'him', u'nor', u'd', u'did', u'didn', u'this', u'she', u'each', u'further', u'where', u'few', u'because', u'doing', u'some', u'hasn', u'are', u'our', u'ourselves', u'out', u'what', u'for', u'while', u're', u'does', u'above', u'between', u'mustn', u't', u'be', u'we', u'who', u'were', u'here', u'shouldn', u'hers', u'by', u'on', u'about', u'couldn', u'of', u'against', u's', u'isn', u'or', u'own', u'into', u'yourself', u'down', u'mightn', u'wasn', u'your', u'from', u'her', u'their', u'aren', u'there', u'been', u'whom', u'too', u'wouldn', u'themselves', u'weren', u'was', u'until', u'more', u'himself', u'that', u'but', u'don', u'with', u'than', u'those', u'he', u'me', u'myself', u'ma', u'these', u'up', u'will', u'below', u'ain', u'can', u'theirs', u'my', u'and', u've', u'then', u'is', u'am', u'it', u'doesn', u'an', u'as', u'itself', u'at', u'have', u'in', u'any', u'if', u'again', u'no', u'when', u'same', u'how', u'other', u'which', u'you', u'shan', u'needn', u'haven', u'after', u'most', u'such', u'why', u'a', u'off', u'i', u'm', u'yours', u'so', u'y', u'the', u'having', u'once']
 	words = text.replace("'", " ").split(" ")
 	if len(set(words) & set(eng_stopwords)) > 5:
 		return True
-
+"""
+	if guess_language(text) is 'en':
+		return True
 	
 def preprocess(text):
-	#convert to lower case
-	text = text.lower()
-	#convert www.* or https?://* to URL
-	text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',text)
-	#convert @username to AT_USER
-	text = re.sub('@[^\s]+','AT_USER',text)
-	#remove additional white spaces
-	text = re.sub('[\s]+', ' ', text)
-	#replace #word with word
-	text = re.sub(r'#([^\s]+)', r'\1', text)
-	#trim
-	text = text.strip('\'"')
-	#get rid of HTML markup
-	soup = BeautifulSoup(text, "html5lib")
-
+    #convert to lower case
+    text = text.lower()
+    #convert www.* or https?://* to URL
+    text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',text)
+    #convert @username to AT_USER
+    text = re.sub('@[^\s]+','AT_USER',text)
+    #remove additional white spaces
+    text = re.sub('[\s]+', ' ', text)
+    #replace #word with word
+    text = re.sub(r'#([^\s]+)', r'\1', text)
+    #trim
+    text = text.strip('\'"')
+    #get rid of HTML markup
+    soup = BeautifulSoup(text, "html5lib")
+        
 	return soup.get_text()
 
 
@@ -52,7 +55,8 @@ def read_lexicon(filename):
 		
 		for line in f:
 			fields = line.split("\t")
-			lex[preprocess(fields[1])] = {fields[-1].strip()[3:]:1.0}
+			if is_english(fields[1]):
+				lex[preprocess(fields[1])] = {fields[-1].strip()[3:]:1.0}
 		return lex
 
 
@@ -187,7 +191,7 @@ if __name__ == "__main__":
 	# Read training, validation, and embedding data.
 	train_lexicon = read_lexicon(sys.argv[1])
 	validation_lexicon = read_lexicon(sys.argv[2])
-	embedding_model = gensim.models.Word2Vec.load(sys.argv[3]).wv
+	embedding_model = gensim.models.Word2Vec.load(sys.argv[3])
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
@@ -199,12 +203,12 @@ if __name__ == "__main__":
 	# Generate batches
 	train_batches = generate_instances(
 		train_lexicon,
-		labels,
+		labels,#.max_number(),
 		config.max_timesteps,
 		batch_size=config.batch_size)
 	validation_batches = generate_instances(
 		validation_lexicon,
-		labels,
+		labels,#.max_number(),
 		config.max_timesteps,
 		batch_size=config.batch_size)
 
