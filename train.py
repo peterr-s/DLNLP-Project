@@ -199,12 +199,12 @@ if __name__ == "__main__":
 	# Generate batches
 	train_batches = generate_instances(
 		train_lexicon,
-		labels,#.max_number(),
+		labels,
 		config.max_timesteps,
 		batch_size=config.batch_size)
 	validation_batches = generate_instances(
 		validation_lexicon,
-		labels,#.max_number(),
+		labels,
 		config.max_timesteps,
 		batch_size=config.batch_size)
 

@@ -35,24 +35,18 @@ class Model:
 		# convert to embeddings
 		embedding_sz = get_dimensionality(embedding_model)
 		self._embedding_model = numpy.zeros((numberer.max_number(), embedding_sz)).astype(numpy.float32)
-		# for k, _ in embedding_model.vocab.items() :
-			# self._embedding_model[numberer.number(k)] = embedding_model[k]
 		for word in numberer.n2v :
 			if word in embedding_model :
 				self._embedding_model[numberer.number(word)] = embedding_model[word].astype(numpy.float32)
 			# else it's already zeroed
 		
-		#input_layer = tf.map_fn(self.sent_embed, self._x, dtype = tf.int32)
-		# input_layer = self._x
 		input_layer = tf.nn.embedding_lookup(self._embedding_model, self._x)
 
 		# make a bunch of LSTM cells and link them
 		# use rnn.DropoutWrapper instead of tf.nn.dropout because the layers are anonymous
 		stacked_LSTM = rnn.MultiRNNCell([rnn.DropoutWrapper(rnn.BasicLSTMCell(config.LSTM_sz), output_keep_prob = config.dropout_ratio) for _ in range(config.LSTM_ct)])
 		backward_LSTM = rnn.MultiRNNCell([rnn.DropoutWrapper(rnn.BasicLSTMCell(config.LSTM_sz), output_keep_prob = config.dropout_ratio) for _ in range(config.LSTM_ct)])
-		
-		# import pdb; pdb.set_trace()
-		
+				
 		# run the whole thing
 		_, hidden = tf.nn.bidirectional_dynamic_rnn(stacked_LSTM, backward_LSTM, input_layer, sequence_length = self._lens, dtype = tf.float32)
 		w = tf.get_variable("W", shape=[hidden[-1].h.shape[1], label_size]) # if I understood the structure of MultiRNNCell correctly, hidden[-1] should be the final state
@@ -81,17 +75,6 @@ class Model:
 			correct = tf.cast(correct, tf.float32)
 			self._accuracy = tf.reduce_mean(correct)
 
-	# def sent_embed(self, sent_arr) :
-		# return tf.map_fn(self.get_embedding, sent_arr, dtype = tf.int32)
-	
-	# def get_embedding(self, word_int) :
-		# word = self._numberer.value(word_int)
-		# if word in self._embedding_model.wv :
-			# print(word, self._embedding_model.wv[word])
-			# return (self._embedding_model.wv[word] * 100).astype(numpy.int32)
-		# else :
-			# return numpy.zeros(self._embedding_model.vector_size).astype(numpy.int32)
-	
 	@property
 	def accuracy(self):
 		return self._accuracy
