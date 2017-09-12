@@ -187,7 +187,7 @@ if __name__ == "__main__":
 	# Read training, validation, and embedding data.
 	train_lexicon = read_lexicon(sys.argv[1])
 	validation_lexicon = read_lexicon(sys.argv[2])
-	embedding_model = gensim.models.Word2Vec.load(sys.argv[3])
+	embedding_model = gensim.models.Word2Vec.load(sys.argv[3]).wv
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
