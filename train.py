@@ -14,7 +14,7 @@ import tensorflow as tf
 import gensim
 
 from bs4 import BeautifulSoup
-from guess_language import guess_language
+# from guess_language import guess_language
 
 from config import DefaultConfig
 from model import Model, Phase
@@ -27,8 +27,9 @@ def is_english(text):
 	# if len(set(words) & set(eng_stopwords)) > 5:
 		# return True
 	
-	if guess_language(text) is 'en':
-		return True
+	#if guess_language(text) is 'en':
+		# return True
+	return True
 	
 def preprocess(text):
 	#convert to lower case
@@ -191,7 +192,7 @@ if __name__ == "__main__":
 	# Read training, validation, and embedding data.
 	train_lexicon = read_lexicon(sys.argv[1])
 	validation_lexicon = read_lexicon(sys.argv[2])
-	embedding_model = gensim.models.Word2Vec.load(sys.argv[3])
+	embedding_model = gensim.models.Word2Vec.load(sys.argv[3]).wv
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
