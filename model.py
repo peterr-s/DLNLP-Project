@@ -38,7 +38,7 @@ class Model:
 		# use rnn.DropoutWrapper instead of tf.nn.dropout because the layers are anonymous
 		stacked_LSTM = rnn.MultiRNNCell([rnn.DropoutWrapper(rnn.BasicLSTMCell(config.LSTM_sz), output_keep_prob = config.dropout_ratio) for _ in range(config.LSTM_ct)])
 		
-		#import pdb; pdb.set_trace()
+		# import pdb; pdb.set_trace()
 		
 		# run the whole thing
 		_, hidden = tf.nn.dynamic_rnn(stacked_LSTM, input_layer, sequence_length = self._lens, dtype = tf.int32)
