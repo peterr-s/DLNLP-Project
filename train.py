@@ -49,7 +49,7 @@ def preprocess(text):
 	text = text.strip('\'"')
 	#get rid of HTML markup
 	soup = BeautifulSoup(text, "html5lib")
-		
+
 	return soup.get_text()
 
 
@@ -195,7 +195,10 @@ if __name__ == "__main__":
 	# Read training, validation, and embedding data.
 	train_lexicon = read_lexicon(sys.argv[1])
 	validation_lexicon = read_lexicon(sys.argv[2])
-	embedding_model = gensim.models.KeyedVectors.load_word2vec_format(sys.argv[3]).wv
+	try :
+		embedding_model = gensim.models.KeyedVectors.load_word2vec_format(sys.argv[3]).wv
+	except Exception : # UnicodeDecodeError, but there might be others
+		embedding_model = gensim.models.Word2Vec.load(sys.argv[3]).wv
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
