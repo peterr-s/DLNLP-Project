@@ -72,11 +72,16 @@ class Model:
 			correct = tf.equal(hp_labels, labels)
 			correct = tf.cast(correct, tf.float32)
 			self._accuracy = tf.reduce_mean(correct)
+			
+			self._hp_labels = hp_labels
 
 	@property
 	def accuracy(self):
 		return self._accuracy
 
+	def hp_labels(self) :
+		return self._hp_labels
+	
 	@property
 	def lens(self):
 		return self._lens
