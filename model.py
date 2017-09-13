@@ -79,6 +79,7 @@ class Model:
 	def accuracy(self):
 		return self._accuracy
 
+	@property
 	def hp_labels(self) :
 		return self._hp_labels
 	
