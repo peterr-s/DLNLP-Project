@@ -196,7 +196,7 @@ def train_model(config, train_batches, validation_batches, embedding_model, numb
 			f1 /= validation_batches.shape[0]
 
 			print(
-				" %3d   | %4.2f  | %4.2f  | %.2f%%  | %.2f%%  | %.2f%%  | %.2f%%  |" %
+				" %3d   | %4.2f  | %4.2f  | %2.2f%%  | %2.2f%%  | %2.2f%%  | %2.2f%%  |" %
 				(epoch, train_loss, validation_loss, accuracy * 100, precision * 100, recall * 100, f1 * 100))
 
 
