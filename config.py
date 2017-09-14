@@ -1,7 +1,7 @@
 class DefaultConfig:
-	n_epochs = 50
+	n_epochs = 30
 	batch_size = 512
 	max_timesteps = 40
-	LSTM_ct = 6
-	LSTM_sz = 300
+	LSTM_ct = 4
+	LSTM_sz = 200
 	dropout_ratio = 0.9
