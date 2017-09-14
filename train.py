@@ -159,6 +159,10 @@ def train_model(config, train_batches, validation_batches, embedding_model, numb
 
 		sess.run(tf.global_variables_initializer())
 
+		print()
+		print("       | train   |                   validation                    |")
+		print(" epoch | loss    | loss    | acc.    | prec.   | recall  | F1      |")
+		print("-------+---------+---------+---------+---------+---------+---------+")
 		for epoch in range(config.n_epochs):
 			train_loss = 0.0
 			validation_loss = 0.0
@@ -179,9 +183,10 @@ def train_model(config, train_batches, validation_batches, embedding_model, numb
 					validation_model.x: validation_batches[batch], validation_model.lens: validation_lens[batch], validation_model.y: validation_labels[batch]})
 				validation_loss += loss
 				accuracy += acc
-				precision += metrics.precision_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32), axis = 1), hpl, average = "micro")
-				recall += metrics.recall_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32)), hpl, average = "micro")
-				f1 += metrics.f1_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32)), hpl, average = "micro")
+				#import pdb; pdb.set_trace()
+				precision += metrics.precision_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32), axis = 1), hpl, average = "macro")
+				recall += metrics.recall_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32), axis = 1), hpl, average = "macro")
+				f1 += metrics.f1_score(np.argmax(np.array(validation_labels[batch]).astype(np.int32), axis = 1), hpl, average = "macro")
 
 			train_loss /= train_batches.shape[0]
 			validation_loss /= validation_batches.shape[0]
@@ -191,24 +196,24 @@ def train_model(config, train_batches, validation_batches, embedding_model, numb
 			f1 /= validation_batches.shape[0]
 
 			print(
-				"epoch %d - train loss: %.2f, validation loss: %.2f, validation acc: %.2f, precision: %.2f, recall: %.2f, accuracy: %.2f" %
-				(epoch, train_loss, validation_loss, accuracy * 100, precision, recall, f1))
+				" %3d   | %4.2f  | %4.2f  | %.2f%%  | %.2f%%  | %.2f%%  | %.2f%%  |" %
+				(epoch, train_loss, validation_loss, accuracy * 100, precision * 100, recall * 100, f1 * 100))
 
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
-		sys.stderr.write("Usage: %s TRAIN_SET DEV_SET EMBEDDINGS\n" % sys.argv[0])
+		sys.stderr.write("Usage: %s EMBEDDINGS TRAIN_SET DEV_SET\n" % sys.argv[0])
 		sys.exit(1)
 
 	config = DefaultConfig()
 
 	# Read training, validation, and embedding data.
-	train_lexicon = read_lexicon(sys.argv[1])
-	validation_lexicon = read_lexicon(sys.argv[2])
+	train_lexicon = read_lexicon(sys.argv[2])
+	validation_lexicon = read_lexicon(sys.argv[3])
 	try :
-		embedding_model = gensim.models.KeyedVectors.load_word2vec_format(sys.argv[3]).wv
+		embedding_model = gensim.models.KeyedVectors.load_word2vec_format(sys.argv[1]).wv
 	except Exception : # UnicodeDecodeError, but there might be others
-		embedding_model = gensim.models.Word2Vec.load(sys.argv[3]).wv
+		embedding_model = gensim.models.Word2Vec.load(sys.argv[1]).wv
 
 	# Convert word characters and part-of-speech labels to numeral
 	# representation.
