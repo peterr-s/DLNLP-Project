@@ -179,9 +179,9 @@ def train_model(config, train_batches, validation_batches, embedding_model, numb
 					validation_model.x: validation_batches[batch], validation_model.lens: validation_lens[batch], validation_model.y: validation_labels[batch]})
 				validation_loss += loss
 				accuracy += acc
-				precision += metrics.precision_score(validation_batches[batch], hpl, average = "micro")
-				recall += metrics.recall_score(validation_batches[batch], hpl, average = "micro")
-				f1 += metrics.f1_score(validation_batches[batch], hpl, average = "micro")
+				precision += metrics.precision_score(np.array(validation_batches[batch]), hpl, average = "micro")
+				recall += metrics.recall_score(np.array(validation_batches[batch]), hpl, average = "micro")
+				f1 += metrics.f1_score(np.array(validation_batches[batch]), hpl, average = "micro")
 
 			train_loss /= train_batches.shape[0]
 			validation_loss /= validation_batches.shape[0]
