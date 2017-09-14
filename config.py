@@ -1,5 +1,5 @@
 class DefaultConfig:
-	n_epochs = 30
+	n_epochs = 20
 	batch_size = 256
 	max_timesteps = 40
 	LSTM_ct = 4
