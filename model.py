@@ -64,12 +64,12 @@ class Model:
 
 		if phase == Phase.Validation:
 			# Highest probability labels of the gold data.
-			self._hp_labels = tf.argmax(self._y, axis=1)
+			gs_labels = tf.argmax(self._y, axis=1)
 
 			# Predicted labels
-			labels = tf.argmax(logits, axis=1)
+			self._hp_labels = tf.argmax(logits, axis=1)
 
-			correct = tf.equal(self._hp_labels, labels)
+			correct = tf.equal(self._hp_labels, gs_labels)
 			correct = tf.cast(correct, tf.float32)
 			self._accuracy = tf.reduce_mean(correct)
 			
