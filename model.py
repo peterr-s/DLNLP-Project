@@ -38,7 +38,8 @@ class Model:
 		for word in numberer.n2v :
 			if word in embedding_model :
 				self._embedding_model[numberer.number(word)] = embedding_model[word].astype(numpy.float32)
-			# else it's already zeroed
+			else
+				self._embedding_model[numberer.number(word)] = (numpy.random.ranf(100) * 2) - 1
 		
 		input_layer = tf.nn.embedding_lookup(self._embedding_model, self._x)
 
